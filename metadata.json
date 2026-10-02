@@ -1,0 +1,6 @@
+{
+  "name": "Kreator Wizytówek UV & vCard",
+  "description": "System zarządzania szablonami wizytówek, personalizacji danych kontaktowych z kodem QR vCard 3.0 oraz eksportu produkcyjnych plików PDF 300 DPI ze spadami i wybiórczą warstwą lakieru UV (Magenta 100%).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
