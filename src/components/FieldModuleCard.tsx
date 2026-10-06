@@ -283,6 +283,60 @@ export const FieldModuleCard: React.FC<FieldModuleCardProps> = ({
             </div>
           </div>
 
+          {/* QR Field Specific Settings (Scaling, Fitting, Source) */}
+          {!isText && qrField && (
+            <div className="bg-neutral-900/90 p-3 rounded-lg border border-neutral-800 space-y-3">
+              <label className="text-neutral-300 font-bold block text-[11px] flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-[#13A3E5]" />
+                  <span>Dopasowanie i Skalowanie Kodu QR</span>
+                </span>
+                <span className="text-[#13A3E5] font-mono text-[11px] font-bold">
+                  {qrField.qrScale ?? 100}%
+                </span>
+              </label>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="50"
+                  max="150"
+                  step="5"
+                  value={qrField.qrScale ?? 100}
+                  onChange={(e) => onUpdate({ qrScale: parseInt(e.target.value) || 100 })}
+                  className="flex-1 h-1.5 bg-neutral-950 rounded-lg appearance-none cursor-pointer accent-[#13A3E5]"
+                />
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ qrScale: 100 })}
+                    className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+                      (qrField.qrScale ?? 100) === 100
+                        ? 'bg-[#13A3E5] text-white'
+                        : 'bg-neutral-950 text-neutral-400 hover:text-white border border-neutral-800'
+                    }`}
+                  >
+                    100% (Wypełnij)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ qrScale: 90 })}
+                    className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${
+                      qrField.qrScale === 90
+                        ? 'bg-[#13A3E5] text-white'
+                        : 'bg-neutral-950 text-neutral-400 hover:text-white border border-neutral-800'
+                    }`}
+                  >
+                    90%
+                  </button>
+                </div>
+              </div>
+              <p className="text-[10px] text-neutral-400">
+                Domyślnie kod QR wypełnia całą ramkę (100%). Użyj suwaka, aby zmienić margines wewnętrzny.
+              </p>
+            </div>
+          )}
+
           {/* Typography Section for Text Fields */}
           {isText && textField && (
             <div className="space-y-2">

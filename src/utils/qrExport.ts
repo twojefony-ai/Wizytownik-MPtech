@@ -131,12 +131,11 @@ export async function downloadQrAsSvg(text: string, filenamePrefix: string = 'QR
 }
 
 /**
- * Export 3: Pure CMYK (0, 0, 0, 100) Vector PDF
- * Page dimensions: 50x50 mm (141.73 pt x 141.73 pt) at 300 DPI scale
+ * Generates Pure CMYK (0, 0, 0, 100) Vector PDF as Uint8Array bytes
+ * Page dimensions: sizeMm x sizeMm at 300 DPI scale
  * Black modules are drawn as pure CMYK 0,0,0,1 rectangles for prepress / DTP
  */
-export async function downloadQrAsCmykPdf(text: string, filenamePrefix: string = 'QR_vCard', sizeMm: number = 50) {
-  // Generate QR module matrix
+export async function generateQrCmykPdfBytes(text: string, filenameTitle: string = 'QR_vCard', sizeMm: number = 50): Promise<Uint8Array> {
   const qr = QRCode.create(text, { errorCorrectionLevel: 'H' });
   const moduleCount = qr.modules.size;
   const moduleData = qr.modules.data; // Uint8Array of module values
@@ -194,13 +193,22 @@ export async function downloadQrAsCmykPdf(text: string, filenamePrefix: string =
   }
 
   // Metadata
-  pdfDoc.setTitle(`${filenamePrefix} - CMYK 100% K Vector QR Code`);
+  pdfDoc.setTitle(`${filenameTitle} - CMYK 100% K Vector QR Code`);
   pdfDoc.setAuthor('Generator Wizytówek DTP');
   pdfDoc.setSubject('Vector QR Code vCard 3.0 CMYK 0,0,0,100');
   pdfDoc.setProducer('DTP Engine 300 DPI');
   pdfDoc.setCreationDate(new Date());
 
-  const pdfBytes = await pdfDoc.save();
+  return await pdfDoc.save();
+}
+
+/**
+ * Export 3: Pure CMYK (0, 0, 0, 100) Vector PDF
+ * Page dimensions: 50x50 mm (141.73 pt x 141.73 pt) at 300 DPI scale
+ * Black modules are drawn as pure CMYK 0,0,0,1 rectangles for prepress / DTP
+ */
+export async function downloadQrAsCmykPdf(text: string, filenamePrefix: string = 'QR_vCard', sizeMm: number = 50) {
+  const pdfBytes = await generateQrCmykPdfBytes(text, filenamePrefix, sizeMm);
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
   downloadBlob(blob, `${filenamePrefix}_CMYK_0_0_0_100.pdf`);
 }

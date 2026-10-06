@@ -137,8 +137,8 @@ export default function App() {
   const showNotification = (message: string) => {
     setNotification({ type: 'success', message });
     setTimeout(() => {
-      setNotification(null);
-    }, 7000);
+      setNotification((prev) => (prev?.message === message ? null : prev));
+    }, 3000);
   };
 
   const preflightReport = runPreflightCheck(selectedTemplate, contactData);
@@ -257,27 +257,39 @@ export default function App() {
         preflightIssueCount={issueCount}
       />
 
-      {/* Dynamic Toast Notification Banner */}
+      {/* Dynamic Floating Toast Notification Overlay (Never shifts modules/layout) */}
       {notification && (
-        <div className="bg-emerald-950/90 border-b border-emerald-500/60 text-emerald-200 px-4 py-2.5 text-xs flex items-center justify-between gap-2 backdrop-blur-md sticky top-[60px] z-30 shadow-lg">
-          <div className="flex items-center gap-2 mx-auto">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="font-semibold text-white">{notification.message}</span>
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-auto max-w-lg w-full px-4 animate-in fade-in slide-in-from-top-3">
+          <div className="bg-emerald-950/95 border border-emerald-500/70 text-emerald-200 px-4 py-2.5 text-xs rounded-xl flex items-center justify-between gap-3 backdrop-blur-md shadow-2xl">
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="font-semibold text-white truncate">{notification.message}</span>
+            </div>
+            <button 
+              onClick={() => setNotification(null)}
+              className="text-emerald-400 hover:text-white p-1 rounded hover:bg-emerald-900/60 transition-colors cursor-pointer text-xs shrink-0"
+            >
+              ✕
+            </button>
           </div>
-          <button 
-            onClick={() => setNotification(null)}
-            className="text-emerald-400 hover:text-white p-0.5 rounded text-xs"
-          >
-            ✕
-          </button>
         </div>
       )}
 
-      {/* Export Success Notification Banner */}
+      {/* Export Success Notification Floating Banner */}
       {exportSuccessMessage && (
-        <div className="bg-emerald-950/80 border-b border-emerald-500/50 text-emerald-200 px-4 py-2.5 text-xs flex items-center justify-center gap-2 backdrop-blur-md sticky top-[60px] z-30 shadow-lg">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>{exportSuccessMessage}</span>
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-auto max-w-lg w-full px-4 animate-in fade-in slide-in-from-top-3">
+          <div className="bg-emerald-950/95 border border-emerald-500/70 text-emerald-200 px-4 py-2.5 text-xs rounded-xl flex items-center justify-between gap-3 backdrop-blur-md shadow-2xl">
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="font-semibold text-white truncate">{exportSuccessMessage}</span>
+            </div>
+            <button 
+              onClick={() => setExportSuccessMessage(null)}
+              className="text-emerald-400 hover:text-white p-1 rounded hover:bg-emerald-900/60 transition-colors cursor-pointer text-xs shrink-0"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
 
@@ -289,6 +301,7 @@ export default function App() {
             <CardCanvas
               template={selectedTemplate}
               contactData={contactData}
+              onChangeContactData={setContactData}
               activeSide={activeSide}
               setActiveSide={setActiveSide}
               selectedFieldId={selectedFieldId}
@@ -298,6 +311,7 @@ export default function App() {
               useBleed={exportSettings.useBleed}
               onUpdateTemplate={handleUpdateTemplate}
               onNotify={showNotification}
+              isInSettingsTab={activeTab === 'template'}
             />
 
             {/* Quick Overview Badges */}

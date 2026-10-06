@@ -43,6 +43,7 @@ export interface QRCodeFieldConfig {
   customData?: string;
   customImageUrl?: string;
   customFileName?: string;
+  qrScale?: number; // scale percentage, default 100% (fills frame)
   darkColorCMYK: CMYKColor;
   lightColorCMYK?: CMYKColor;
   errorCorrection: 'L' | 'M' | 'Q' | 'H';
@@ -170,7 +171,11 @@ export interface BatchItem {
   lastName: string;
   jobTitle: string;
   phone: string;
+  phoneMobile?: string;
   email: string;
+  qrFileName?: string; // e.g. 'QR/jan_kowalski.pdf' for Adobe InDesign
+  customQrImage?: string;
+  useCustomQr?: boolean;
   // Predefined/overridden company parameters
   company?: string;
   office?: string;
