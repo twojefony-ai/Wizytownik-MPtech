@@ -267,6 +267,11 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
           [field.bindKey]: newText,
         });
       }
+
+      if (onUpdateTemplate) {
+        const updatedFields = template.fields.map((f) => (f.id === field.id ? { ...f, defaultValue: newText } : f));
+        onUpdateTemplate({ ...template, fields: updatedFields as CardField[] });
+      }
     } else if (onUpdateTemplate) {
       const updatedFields = template.fields.map((f) => (f.id === field.id ? { ...f, defaultValue: newText } : f));
       onUpdateTemplate({ ...template, fields: updatedFields as CardField[] });
@@ -527,7 +532,7 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
 
         {/* View Mode controls */}
         <div className="flex items-center gap-1">
-          <div className="flex items-center bg-neutral-900/90 p-1 rounded-xl border border-neutral-800 shadow-sm text-xs">
+          <div id="tour-view-modes" className="flex items-center bg-neutral-900/90 p-1 rounded-xl border border-neutral-800 shadow-sm text-xs">
             <button
               onClick={() => setViewMode('composite')}
               title="Realistyczny podgląd z połyskiem lakieru UV"
@@ -918,7 +923,7 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
                   {isCompanyLocked && (
                     <div 
                       title={isInSettingsTab ? "Pole stałe firmy - kliknij, aby edytować po potwierdzeniu" : "Pole stałe firmy - konfiguracja w Ustawieniach"}
-                      className="absolute top-1/2 -translate-y-1/2 -right-3.5 text-neutral-500 hover:text-neutral-400 p-0.5 rounded pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center"
+                      className="absolute top-1/2 -translate-y-1/2 right-0.5 text-neutral-500 hover:text-neutral-400 p-0.5 rounded pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center"
                     >
                       <Lock className="w-2.5 h-2.5" />
                     </div>
@@ -936,6 +941,10 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
                           }}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
+                              // Allow multiline enter for address or taller text boxes
+                              if (field.bindKey === 'address' || (field.h && field.h > 7)) {
+                                return;
+                              }
                               e.preventDefault();
                               setEditingFieldId(null);
                             } else if (e.key === 'Escape') {

@@ -4,9 +4,11 @@ import {
   Download, 
   RotateCcw,
   Sliders,
-  Layers
+  Layers,
+  HelpCircle
 } from 'lucide-react';
 import { BusinessCardTemplate } from '../types';
+import { restartOnboardingTour } from '../utils/tour';
 
 interface HeaderProps {
   activeTab: 'personalize' | 'template' | 'preflight';
@@ -16,6 +18,7 @@ interface HeaderProps {
   onSelectTemplate?: (template: BusinessCardTemplate) => void;
   onOpenUpload?: () => void;
   onOpenVCard?: () => void;
+  onOpenTour?: () => void;
   onExportPdf: () => void;
   isExporting: boolean;
   activeSide: 'front' | 'back';
@@ -28,6 +31,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
+  onOpenTour,
   onExportPdf,
   isExporting,
   preflightIssueCount,
@@ -79,6 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Przycisk "pobierz PDF produkcyjny" obok "preflight dtp" */}
           <button
+            id="tour-export-button"
             onClick={onExportPdf}
             disabled={isExporting}
             className="px-4 py-2 text-xs font-semibold text-white bg-[#13A3E5] hover:bg-[#0e8ec9] active:scale-95 transition-all rounded-xl flex items-center gap-2 shadow-lg shadow-[#13A3E5]/25 border border-[#13A3E5]/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
@@ -92,8 +97,23 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Ikonę ustawienia całkiem na prawą krawędź ekranu, za przyciskiem pobierz pdf */}
-        <div className="flex items-center justify-end shrink-0">
+        {/* Prawe kontrolki: Samouczek oraz Ustawienia */}
+        <div className="flex items-center justify-end gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('personalize');
+              if (onOpenTour) {
+                onOpenTour();
+              }
+            }}
+            title="Uruchom interaktywny samouczek krok po kroku"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs text-neutral-400 hover:text-white bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-[#13A3E5]" />
+            <span className="hidden sm:inline">Samouczek</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('template')}
             aria-label="Ustawienia"

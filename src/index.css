@@ -1,1 +1,39 @@
 @import "tailwindcss";
+
+/* ==========================================================================
+   Guided Tour Styling (Dark DTP Theme)
+   - Wyrazista niebieska ramka aktywnego elementu (#13A3E5, 3px solid)
+   - Element aktywny w 100% ostry (brak rozmycia w każdym kroku)
+   - Ramka okna samouczka ciemniejsza o 25% (#0e7aac, 2px solid)
+   - Zaciemnienie overlay: 10% black (rgba(0, 0, 0, 0.10))
+   - Blur tła: 3% (blur 1px) dla wszystkich elementów poza omawianym
+   ========================================================================== */
+
+/* Active Highlighted Element Stage & Target Element - Crisp, Sharp, Vivid Blue Border */
+.tour-highlight-active {
+  outline: 3px solid #13A3E5 !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 4px rgba(19, 163, 229, 0.4), 0 0 28px rgba(19, 163, 229, 0.7) !important;
+  border-radius: 14px !important;
+  position: relative !important;
+  z-index: 99995 !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  transition: outline 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Elevate parent stacking contexts (e.g. sticky canvas column or header) above blur overlay */
+.tour-parent-elevated {
+  z-index: 99992 !important;
+  filter: none !important;
+}
+
+header:has(.tour-highlight-active),
+div:has(> .tour-highlight-active),
+div:has(> div > .tour-highlight-active),
+div:has(> div > div > .tour-highlight-active) {
+  z-index: 99992 !important;
+  filter: none !important;
+}

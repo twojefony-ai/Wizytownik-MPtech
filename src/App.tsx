@@ -6,9 +6,11 @@ import { PersonalizationForm } from './components/PersonalizationForm';
 import { PreflightInspector } from './components/PreflightInspector';
 import { UploadModal } from './components/UploadModal';
 import { VCardModal } from './components/VCardModal';
+import { OnboardingTourModal } from './components/OnboardingTourModal';
 import { SAMPLE_TEMPLATES, DEFAULT_CONTACT_DATA } from './data/sampleTemplates';
 import { BusinessCardTemplate, ContactData, ExportSettings, CardSide } from './types';
 import { runPreflightCheck } from './utils/preflight';
+import { startOnboardingTour } from './utils/tour';
 import { 
   Download, 
   Sparkles, 
@@ -113,6 +115,8 @@ export default function App() {
       }
     };
     refreshStartupPreviews();
+    // Start guided onboarding tour if first visit
+    startOnboardingTour();
   }, []);
 
   const [exportSettings, setExportSettings] = useState<ExportSettings>({
@@ -130,6 +134,9 @@ export default function App() {
 
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isVCardOpen, setIsVCardOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(() => {
+    return localStorage.getItem('wizytownik_onboarding_tour_v5') !== 'true';
+  });
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccessMessage, setExportSuccessMessage] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'info'; message: string } | null>(null);
@@ -248,6 +255,10 @@ export default function App() {
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onOpenTour={() => {
+          setActiveTab('personalize');
+          setIsTourOpen(true);
+        }}
         onExportPdf={handleExportPdf}
         isExporting={isExporting}
         activeSide={activeSide}
@@ -297,7 +308,7 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left / Center Column: Live Visual Canvas & DTP Simulation (7 cols) - Sticky so it stays visible while scrolling during text edit */}
         <div className="lg:col-span-7 flex flex-col items-center sticky top-20 z-20">
-          <div className="w-full">
+          <div id="tour-card-canvas" className="w-full">
             <CardCanvas
               template={selectedTemplate}
               contactData={contactData}
@@ -410,6 +421,12 @@ export default function App() {
         contactData={contactData}
         onChangeContactData={setContactData}
         onNotify={showNotification}
+      />
+
+      {/* Interactive Onboarding Tour Modal */}
+      <OnboardingTourModal
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
       />
 
       {/* Subtle Footer */}

@@ -112,7 +112,7 @@ export const PersonalizationForm: React.FC<PersonalizationFormProps> = ({
   return (
     <div className="space-y-4">
       {/* 1. Dane osobowe i kontaktowe pracownika */}
-      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
+      <div id="tour-personalization-form" className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
             <User className="w-3.5 h-3.5 text-[#13A3E5]" />
@@ -162,10 +162,10 @@ export const PersonalizationForm: React.FC<PersonalizationFormProps> = ({
           </div>
 
           {/* Bezpośrednie kanały kontaktu */}
-          <div>
+          <div className="sm:col-span-2">
             <label className="text-neutral-400 block mb-1 flex items-center gap-1">
               <Phone className="w-3 h-3 text-emerald-400" />
-              <span>Telefon Główny (tel)</span>
+              <span>Telefon</span>
             </label>
             <input
               type="text"
@@ -175,27 +175,14 @@ export const PersonalizationForm: React.FC<PersonalizationFormProps> = ({
               className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-[#13A3E5] transition-colors"
             />
           </div>
-          <div>
-            <label className="text-neutral-400 block mb-1 flex items-center gap-1">
-              <Phone className="w-3 h-3 text-teal-400" />
-              <span>Telefon Komórkowy (tel2)</span>
-            </label>
-            <input
-              type="text"
-              value={contactData.phoneMobile || ''}
-              onChange={(e) => updateField('phoneMobile', e.target.value)}
-              placeholder="+48 71 325 55 55"
-              className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-[#13A3E5] transition-colors"
-            />
-          </div>
           <div className="sm:col-span-2">
             <div className="flex items-center justify-between mb-1">
               <label className="text-neutral-400 flex items-center gap-1">
                 <Mail className="w-3 h-3 text-[#13A3E5]" />
                 <span>Adres E-mail</span>
               </label>
-              <span className="text-[10px] text-neutral-500 font-mono">
-                Auto: imie.nazwisko@mptech.eu
+              <span className="text-[10px] text-neutral-400 font-mono">
+                Auto (można edytować ręcznie): imie.nazwisko@mptech.eu
               </span>
             </div>
             <input
@@ -242,7 +229,7 @@ export const PersonalizationForm: React.FC<PersonalizationFormProps> = ({
       </div>
 
       {/* 3. Moduł Podgląd vCard 3.0 / Kod QR z opcją pobrania */}
-      <div className="p-3.5 bg-neutral-950 border border-neutral-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div id="tour-qr-section" className="p-3.5 bg-neutral-950 border border-neutral-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-[#13A3E5]/15 text-[#13A3E5] rounded-lg border border-[#13A3E5]/30 shrink-0">
             <QrCode className="w-4 h-4" />
