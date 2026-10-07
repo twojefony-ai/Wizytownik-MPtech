@@ -108,18 +108,18 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
     const qrFields = template.fields.filter((f) => f.type === 'qr') as QRCodeFieldConfig[];
     qrFields.forEach(async (qrField) => {
       try {
-        // If custom uploaded QR exists and is active, use it directly for preview
-        const customUrl = contactData.useCustomQr ? contactData.customQrImage : (qrField.customImageUrl || contactData.customQrImage);
-        if (customUrl) {
-          setQrCodeUrls((prev) => ({ ...prev, [qrField.id]: customUrl }));
+        // If this specific contact explicitly has and uses a custom uploaded QR image
+        if (contactData.useCustomQr && contactData.customQrImage) {
+          setQrCodeUrls((prev) => ({ ...prev, [qrField.id]: contactData.customQrImage! }));
           return;
         }
 
+        // Generate distinct vCard 3.0 QR code for this specific contact record
         let content = '';
-        if (qrField.source === 'vcard') {
-          content = buildVCard3(contactData);
+        if ((qrField.source === 'custom_url' || qrField.source === 'custom_text') && qrField.customData) {
+          content = qrField.customData;
         } else {
-          content = qrField.customData || contactData.website || 'https://example.com';
+          content = buildVCard3(contactData);
         }
 
         const darkHex = cmykToHex(qrField.darkColorCMYK || [0, 0, 0, 100]);
@@ -144,11 +144,16 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
 
   // Focus inline input when editingFieldId changes
   useEffect(() => {
-    if (editingFieldId && inlineInputRef.current) {
-      inlineInputRef.current.focus();
-      if ('select' in inlineInputRef.current) {
-        inlineInputRef.current.select();
-      }
+    if (editingFieldId) {
+      const timer = setTimeout(() => {
+        if (inlineInputRef.current) {
+          inlineInputRef.current.focus();
+          if ('select' in inlineInputRef.current) {
+            inlineInputRef.current.select();
+          }
+        }
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [editingFieldId]);
 
@@ -192,8 +197,11 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
 
   // Start inline editing of text field (if not locked to Settings)
   const handleStartInlineEdit = (field: TextFieldConfig) => {
-    if (isCompanyLockedField(field)) {
-      if (onNotify) {
+    const isLocked = isCompanyLockedField(field) && !unlockedLockedFieldIds.includes(field.id);
+    if (isLocked) {
+      if (isInSettingsTab) {
+        setConfirmingField(field);
+      } else if (onNotify) {
         onNotify('Dane stałe firmy (NIP, adres siedziby) konfiguruje się w zakładce Ustawienia.');
       }
       return;
@@ -204,7 +212,8 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
 
   // Commit inline text changes to contactData (and template if static)
   const handleCommitInlineText = (field: TextFieldConfig, newText: string) => {
-    if (isCompanyLockedField(field)) return;
+    const isLocked = !isInSettingsTab && isCompanyLockedField(field) && !unlockedLockedFieldIds.includes(field.id);
+    if (isLocked) return;
 
     if (field.bindKey && onChangeContactData) {
       if (field.bindKey === 'fullName') {
@@ -240,6 +249,18 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
         onChangeContactData({ ...contactData, phoneMobile: newText });
       } else if (field.bindKey === 'email') {
         onChangeContactData({ ...contactData, email: newText });
+      } else if (field.bindKey === 'address') {
+        onChangeContactData({ ...contactData, address: newText });
+      } else if (field.bindKey === 'nip') {
+        onChangeContactData({ ...contactData, nip: newText });
+      } else if (field.bindKey === 'street') {
+        onChangeContactData({ ...contactData, street: newText });
+      } else if (field.bindKey === 'company') {
+        onChangeContactData({ ...contactData, company: newText });
+      } else if (field.bindKey === 'office') {
+        onChangeContactData({ ...contactData, office: newText });
+      } else if (field.bindKey === 'website') {
+        onChangeContactData({ ...contactData, website: newText });
       } else {
         onChangeContactData({
           ...contactData,
@@ -893,11 +914,11 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
                       : ''
                   }`}
                 >
-                  {/* Subtle Lock Icon for Locked Company Fields */}
+                  {/* Subtle Lock Icon for Locked Company Fields - Centered on right edge */}
                   {isCompanyLocked && (
                     <div 
                       title={isInSettingsTab ? "Pole stałe firmy - kliknij, aby edytować po potwierdzeniu" : "Pole stałe firmy - konfiguracja w Ustawieniach"}
-                      className="absolute -top-1 -right-1 text-neutral-500 hover:text-neutral-400 p-0.5 rounded pointer-events-none opacity-40 group-hover:opacity-90 transition-opacity z-20"
+                      className="absolute top-1/2 -translate-y-1/2 -right-3.5 text-neutral-500 hover:text-neutral-400 p-0.5 rounded pointer-events-none opacity-50 group-hover:opacity-100 transition-opacity z-20 flex items-center justify-center"
                     >
                       <Lock className="w-2.5 h-2.5" />
                     </div>
@@ -1119,10 +1140,11 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
                   type="button"
                   onClick={() => {
                     const target = confirmingField;
-                    setUnlockedLockedFieldIds((prev) => [...prev, target.id]);
+                    setUnlockedLockedFieldIds((prev) => (prev.includes(target.id) ? prev : [...prev, target.id]));
                     setConfirmingField(null);
                     onSelectField(target.id);
-                    handleStartInlineEdit(target);
+                    setEditingFieldId(target.id);
+                    setEditingText(getFieldText(target));
                   }}
                   className="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white text-xs font-semibold border border-neutral-700 transition-colors cursor-pointer"
                 >

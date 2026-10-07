@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import QRCode from 'qrcode';
 import { 
   FileSpreadsheet, 
   Upload, 
@@ -70,11 +71,35 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
   const [pasteMode, setPasteMode] = useState(false);
   const [pastedText, setPastedText] = useState('');
   const [selectedPreviewId, setSelectedPreviewId] = useState<string | null>(null);
+  const [rowQrUrls, setRowQrUrls] = useState<Record<string, string>>({});
 
   // Individual Row QR Download Menu state
   const [openQrDownloadRowId, setOpenQrDownloadRowId] = useState<string | null>(null);
   const [uploadingRowId, setUploadingRowId] = useState<string | null>(null);
   const rowFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  // Generate distinct QR code previews for every batch item
+  React.useEffect(() => {
+    if (batchItems.length === 0) return;
+    batchItems.forEach(async (item) => {
+      try {
+        if (item.useCustomQr && item.customQrImage) {
+          setRowQrUrls((prev) => ({ ...prev, [item.id]: item.customQrImage! }));
+          return;
+        }
+        const contact = batchItemToContactData(item, baseContactData);
+        const vcard = buildVCard3(contact);
+        const url = await QRCode.toDataURL(vcard, {
+          margin: 0,
+          errorCorrectionLevel: 'M',
+          width: 200,
+        });
+        setRowQrUrls((prev) => ({ ...prev, [item.id]: url }));
+      } catch (e) {
+        console.error('Error generating batch row QR:', e);
+      }
+    });
+  }, [batchItems, baseContactData]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -720,9 +745,25 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                             )}
                           </td>
 
-                          {/* Individual QR Code Column with Upload & Download capabilities */}
+                          {/* Individual QR Code Column with Preview Thumbnail, Upload & Download capabilities */}
                           <td className="py-2.5 px-3 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-2">
+                              {/* QR Thumbnail */}
+                              <div 
+                                title={`Kod QR dla: ${item.fullName || 'Pracownik'}`}
+                                className="w-7 h-7 bg-white p-0.5 rounded border border-neutral-700 shrink-0 flex items-center justify-center shadow-sm overflow-hidden"
+                              >
+                                {rowQrUrls[item.id] ? (
+                                  <img 
+                                    src={rowQrUrls[item.id]} 
+                                    alt="QR" 
+                                    className="w-full h-full object-contain"
+                                  />
+                                ) : (
+                                  <QrCode className="w-4 h-4 text-neutral-800 animate-pulse" />
+                                )}
+                              </div>
+
                               {/* Hidden file input for this specific user */}
                               <input
                                 ref={(el) => (rowFileInputRefs.current[item.id] = el)}
@@ -810,8 +851,8 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                   </button>
                                 </div>
                               ) : (
-                                <span className="text-neutral-500 font-mono text-[10px]">
-                                  vCard Auto
+                                <span className="text-emerald-400/90 font-mono text-[10px] bg-emerald-950/40 border border-emerald-800/40 px-1.5 py-0.5 rounded">
+                                  vCard
                                 </span>
                               )}
                             </div>

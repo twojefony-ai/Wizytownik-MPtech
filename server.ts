@@ -289,8 +289,8 @@ async function renderFieldsOnPage(
       });
     } else if (field.type === 'qr') {
       const qrField = field as QRCodeFieldConfig;
-      const customQrSrc = (contactData.useCustomQr || qrField.source === 'custom_image') 
-        ? (contactData.customQrImage || qrField.customImageUrl) 
+      const customQrSrc = (contactData.useCustomQr && contactData.customQrImage) 
+        ? contactData.customQrImage 
         : null;
 
       let customEmbedded = false;
@@ -357,10 +357,10 @@ async function renderFieldsOnPage(
       if (!customEmbedded) {
         let qrContent = '';
 
-        if (qrField.source === 'vcard') {
-          qrContent = buildVCard3(contactData);
+        if ((qrField.source === 'custom_url' || qrField.source === 'custom_text') && qrField.customData) {
+          qrContent = qrField.customData;
         } else {
-          qrContent = qrField.customData || contactData.website || 'https://example.com';
+          qrContent = buildVCard3(contactData);
         }
 
         // Generate High-Res 300 DPI QR Matrix
