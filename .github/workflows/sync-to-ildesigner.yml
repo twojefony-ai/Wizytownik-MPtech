@@ -1,0 +1,19 @@
+name: Sync to ILdeSigner
+
+on:
+  push:
+    branches:
+      - main  # jeśli używasz 'master', zmień na master
+
+jobs:
+  mirror-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Target
+        run: |
+          git push --force https://x-access-token:${{ secrets.DESTINATION_PUSH_TOKEN }}@github.com/ILdeSigner/wizytownik-mptech.git main:main
