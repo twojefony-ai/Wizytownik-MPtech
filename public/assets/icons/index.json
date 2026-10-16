@@ -1,0 +1,56 @@
+[
+  {
+    "name": "mail",
+    "fileName": "mail.svg",
+    "url": "/assets/icons/mail.svg",
+    "category": "dtp_business_card"
+  },
+  {
+    "name": "phone",
+    "fileName": "phone.svg",
+    "url": "/assets/icons/phone.svg",
+    "category": "dtp_business_card"
+  },
+  {
+    "name": "mobile",
+    "fileName": "mobile.svg",
+    "url": "/assets/icons/mobile.svg",
+    "category": "dtp_business_card"
+  },
+  {
+    "name": "location",
+    "fileName": "location.svg",
+    "url": "/assets/icons/location.svg",
+    "category": "dtp_business_card"
+  },
+  {
+    "name": "nip",
+    "fileName": "nip.svg",
+    "url": "/assets/icons/nip.svg",
+    "category": "dtp_business_card"
+  },
+  {
+    "name": "website",
+    "fileName": "website.svg",
+    "url": "/assets/icons/website.svg",
+    "category": "dtp_business_card"
+  },
+  {
+    "name": "qr-code",
+    "fileName": "qr-code.svg",
+    "url": "/assets/icons/qr-code.svg",
+    "category": "dtp_business_card"
+  },
+  {
+    "name": "uv-layer",
+    "fileName": "uv-layer.svg",
+    "url": "/assets/icons/uv-layer.svg",
+    "category": "dtp_business_card"
+  },
+  {
+    "name": "download",
+    "fileName": "download.svg",
+    "url": "/assets/icons/download.svg",
+    "category": "dtp_business_card"
+  }
+]

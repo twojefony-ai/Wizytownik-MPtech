@@ -34,10 +34,10 @@ export const SAMPLE_TEMPLATES: BusinessCardTemplate[] = [
     masterPdfFileName: 'Wizytowki-MP_2026_09-template1.pdf',
     masterPdfPageCount: 4,
     masterPdfPreviews: {
-      front: '/uploads/previews/Wizytowki-MP_2026_09-template1_page_1.png',
-      frontUv: '/uploads/previews/Wizytowki-MP_2026_09-template1_page_2.png',
-      back: '/uploads/previews/Wizytowki-MP_2026_09-template1_page_3.png',
-      backUv: '/uploads/previews/Wizytowki-MP_2026_09-template1_page_4.png',
+      front: '/assets/previews/Wizytowki-MP_2026_09-template1_page_1.png',
+      frontUv: '/assets/previews/Wizytowki-MP_2026_09-template1_page_2.png',
+      back: '/assets/previews/Wizytowki-MP_2026_09-template1_page_3.png',
+      backUv: '/assets/previews/Wizytowki-MP_2026_09-template1_page_4.png',
     },
     frontBg: {
       type: 'solid',

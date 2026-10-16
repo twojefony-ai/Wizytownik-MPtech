@@ -34,7 +34,8 @@ import {
   batchItemToContactData, 
   downloadInDesignCSV, 
   downloadInDesignDataMergeZip,
-  generateInDesignCSV 
+  generateInDesignCSV,
+  decodeCsvBuffer
 } from '../utils/csv';
 import { buildVCard3 } from '../utils/vcard';
 import { downloadQrAsCmykPdf, downloadQrAsSvg, downloadQrAsPng } from '../utils/qrExport';
@@ -101,17 +102,40 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
     });
   }, [batchItems, baseContactData]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Encoding configuration for Polish character sets (Windows-1250 vs UTF-8)
+  const [encoding, setEncoding] = useState<'auto' | 'windows-1250' | 'utf-8'>('auto');
+  const [rawFileBuffer, setRawFileBuffer] = useState<ArrayBuffer | null>(null);
+
+  const handleEncodingChange = (newEncoding: 'auto' | 'windows-1250' | 'utf-8') => {
+    setEncoding(newEncoding);
+    if (rawFileBuffer) {
+      const text = decodeCsvBuffer(rawFileBuffer, newEncoding);
+      processRawCSV(text, csvFileName || 'CSV');
+      if (onNotify) {
+        const label = newEncoding === 'auto' ? 'Auto-wykrywanie' : newEncoding === 'windows-1250' ? 'Windows-1250 (Excel PL)' : 'UTF-8';
+        onNotify(`Przełączono zestaw znaków na: ${label}`);
+      }
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setCsvFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = (event.target?.result as string) || '';
-      processRawCSV(content, file.name);
-    };
-    reader.readAsText(file);
+    try {
+      const buffer = await file.arrayBuffer();
+      setRawFileBuffer(buffer);
+      const text = decodeCsvBuffer(buffer, encoding);
+      processRawCSV(text, file.name);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = (event.target?.result as string) || '';
+        processRawCSV(content, file.name);
+      };
+      reader.readAsText(file);
+    }
     e.target.value = '';
   };
 
@@ -145,7 +169,9 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
       const path = type === 'indesign' ? '/sample_indesign.csv' : '/sample_batch.csv';
       const res = await fetch(path);
       if (res.ok) {
-        const text = await res.text();
+        const buffer = await res.arrayBuffer();
+        setRawFileBuffer(buffer);
+        const text = decodeCsvBuffer(buffer, encoding);
         const fileName = type === 'indesign' ? 'sample_indesign.csv' : 'sample_batch.csv';
         setCsvFileName(fileName);
         processRawCSV(text, fileName);
@@ -545,6 +571,49 @@ export const BatchProcessor: React.FC<BatchProcessorProps> = ({
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#13A3E5]" />
                 <span>Wczytaj Demo InDesign</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Polish Character Encoding Selector (Windows-1250 vs UTF-8) */}
+          <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-neutral-950/80 border border-neutral-800 rounded-xl text-xs">
+            <div className="flex items-center gap-1.5 text-neutral-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Obsługa polskich znaków (ą, ć, ę, ł, ń, ó, ś, ź, ż):</span>
+            </div>
+            <div className="inline-flex rounded-lg border border-neutral-800 bg-neutral-900 p-0.5">
+              <button
+                type="button"
+                onClick={() => handleEncodingChange('auto')}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                  encoding === 'auto'
+                    ? 'bg-[#13A3E5] text-white shadow-sm'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                Auto-wykrywanie (Zalecane)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleEncodingChange('windows-1250')}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                  encoding === 'windows-1250'
+                    ? 'bg-[#13A3E5] text-white shadow-sm'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                Windows-1250 (Excel PL)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleEncodingChange('utf-8')}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                  encoding === 'utf-8'
+                    ? 'bg-[#13A3E5] text-white shadow-sm'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                UTF-8
               </button>
             </div>
           </div>

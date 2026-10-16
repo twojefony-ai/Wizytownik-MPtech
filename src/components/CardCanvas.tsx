@@ -432,11 +432,11 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
   } else if (template.masterPdfFileName) {
     const clean = template.masterPdfFileName.replace(/\.pdf$/i, '');
     if (activeSide === 'front') {
-      bgImageUrl = viewMode === 'uv_mask' ? `/uploads/previews/${clean}_page_2.png` : `/uploads/previews/${clean}_page_1.png`;
-      uvMaskImageUrl = `/uploads/previews/${clean}_page_2.png`;
+      bgImageUrl = viewMode === 'uv_mask' ? `/assets/previews/${clean}_page_2.png` : `/assets/previews/${clean}_page_1.png`;
+      uvMaskImageUrl = `/assets/previews/${clean}_page_2.png`;
     } else {
-      bgImageUrl = viewMode === 'uv_mask' ? `/uploads/previews/${clean}_page_4.png` : `/uploads/previews/${clean}_page_3.png`;
-      uvMaskImageUrl = `/uploads/previews/${clean}_page_4.png`;
+      bgImageUrl = viewMode === 'uv_mask' ? `/assets/previews/${clean}_page_4.png` : `/assets/previews/${clean}_page_3.png`;
+      uvMaskImageUrl = `/assets/previews/${clean}_page_4.png`;
     }
   }
 
@@ -680,7 +680,15 @@ export const CardCanvas: React.FC<CardCanvasProps> = ({
               src={bgImageUrl}
               alt="Master PDF Graphic"
               onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
+                const img = e.currentTarget;
+                const src = img.src;
+                if (src.includes('/assets/previews/')) {
+                  img.src = src.replace('/assets/previews/', '/uploads/previews/');
+                } else if (src.includes('/uploads/previews/')) {
+                  img.src = src.replace('/uploads/previews/', '/assets/previews/');
+                } else {
+                  img.style.display = 'none';
+                }
               }}
               style={{
                 position: 'absolute',

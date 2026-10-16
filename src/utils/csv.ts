@@ -4,6 +4,95 @@ import { buildVCard3 } from './vcard';
 import { generateQrCmykPdfBytes } from './qrExport';
 
 /**
+ * Repairs common Polish character mojibake resulting from UTF-8 / Windows-1250 / ISO-8859-2 misencoding
+ */
+export function repairPolishMojibake(text: string): string {
+  if (!text) return '';
+  
+  // Mapping of UTF-8 mojibake (when UTF-8 bytes were wrongly decoded as Windows-1252/ISO-8859-1)
+  const utf8MojibakeMap: Record<string, string> = {
+    'Ã³': 'ó', 'Ã“': 'Ó',
+    'Å¼': 'ż', 'Å»': 'Ż',
+    'Åº': 'ź', 'Å¹': 'Ź',
+    'Ä‡': 'ć', 'Ä†': 'Ć',
+    'Ä™': 'ę', 'Ä˜': 'Ę',
+    'Å‚': 'ł', 'Å\u0081': 'Ł', 'Å ': 'Ł',
+    'Å„': 'ń', 'Åƒ': 'Ń',
+    'Å›': 'ś', 'Åš': 'Ś',
+    'Ä…': 'ą', 'Ä„': 'Ą',
+  };
+
+  let repaired = text;
+  for (const [bad, good] of Object.entries(utf8MojibakeMap)) {
+    repaired = repaired.replaceAll(bad, good);
+  }
+
+  // Also replace CP1250 single-byte characters that were parsed under standard ISO-8859-1/Latin1
+  const cp1250Latin1Map: Record<string, string> = {
+    '¿': 'ż', '¯': 'Ż',
+    '¹': 'ą', '¡': 'Ą',
+    'ê': 'ę', 'Ê': 'Ę',
+    '³': 'ł', '£': 'Ł',
+    'œ': 'ś', 'Œ': 'Ś',
+    'æ': 'ć', 'Æ': 'Ć',
+    'ñ': 'ń', 'Ñ': 'Ń',
+    'Ÿ': 'ź',
+  };
+  for (const [bad, good] of Object.entries(cp1250Latin1Map)) {
+    // Only replace if surrounding characters look like Polish text
+    repaired = repaired.replaceAll(bad, good);
+  }
+
+  // Remove Unicode replacement character if any residual
+  repaired = repaired.replace(/\uFFFD/g, '');
+
+  return repaired;
+}
+
+/**
+ * Decodes raw binary buffer to string using auto-detection between UTF-8 and Windows-1250 (Polish Excel default)
+ */
+export function decodeCsvBuffer(
+  buffer: ArrayBuffer | Uint8Array,
+  preferredEncoding: 'auto' | 'windows-1250' | 'utf-8' = 'auto'
+): string {
+  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+
+  // Check UTF-8 BOM (EF BB BF)
+  if (bytes.length >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
+    return repairPolishMojibake(new TextDecoder('utf-8').decode(bytes.slice(3)));
+  }
+
+  if (preferredEncoding === 'windows-1250') {
+    try {
+      return repairPolishMojibake(new TextDecoder('windows-1250').decode(bytes));
+    } catch {
+      return repairPolishMojibake(new TextDecoder('utf-8').decode(bytes));
+    }
+  }
+
+  if (preferredEncoding === 'utf-8') {
+    return repairPolishMojibake(new TextDecoder('utf-8').decode(bytes));
+  }
+
+  // Auto-detect: Test UTF-8 with fatal: true
+  try {
+    const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+    const text = utf8Decoder.decode(bytes);
+    return repairPolishMojibake(text);
+  } catch {
+    // If fatal UTF-8 fails (e.g. invalid bytes like 0xBF for ż in Windows-1250), decode as windows-1250
+    try {
+      const winDecoder = new TextDecoder('windows-1250');
+      const text = winDecoder.decode(bytes);
+      return repairPolishMojibake(text);
+    } catch {
+      return repairPolishMojibake(new TextDecoder('utf-8').decode(bytes));
+    }
+  }
+}
+
+/**
  * Robust CSV parser that handles quotes, commas, semicolons, and various newline formats
  */
 export function parseCSV(rawText: string): string[][] {
@@ -12,8 +101,8 @@ export function parseCSV(rawText: string): string[][] {
   let currentCell = '';
   let insideQuotes = false;
 
-  // Normalize line endings
-  const text = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  // Clean Polish mojibake and normalize line endings
+  const text = repairPolishMojibake(rawText).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
   // Detect delimiter: check first line for comma vs semicolon vs tab
   const firstLine = text.split('\n')[0] || '';

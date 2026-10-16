@@ -5,7 +5,8 @@ import {
   RotateCcw,
   Sliders,
   Layers,
-  HelpCircle
+  HelpCircle,
+  FileDown
 } from 'lucide-react';
 import { BusinessCardTemplate } from '../types';
 import { restartOnboardingTour } from '../utils/tour';
@@ -39,12 +40,25 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="bg-neutral-900/90 border-b border-neutral-800 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* App Title */}
+        {/* App Title & mPTech Logo */}
         <div className="flex items-center w-full md:w-auto justify-between md:justify-start shrink-0">
-          <div className="flex items-center">
-            <span className="font-bold tracking-tight text-white font-['Rajdhani'] text-lg uppercase">
-              Wizytownik
-            </span>
+          <div className="flex items-center gap-2.5">
+            <img 
+              src="/assets/logo/mptech-mark.svg" 
+              alt="mPTech Logo" 
+              className="w-7 h-7 rounded-lg shadow-sm ring-1 ring-neutral-700/60"
+            />
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="font-bold tracking-tight text-white font-['Rajdhani'] text-lg uppercase leading-none">
+                  Wizytownik
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#13A3E5]/15 text-[#13A3E5] border border-[#13A3E5]/30">
+                  v2.0 Fork
+                </span>
+              </div>
+              <span className="text-[10px] text-neutral-400 leading-none mt-0.5">mPTech DTP Studio</span>
+            </div>
           </div>
         </div>
 
@@ -97,8 +111,18 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Prawe kontrolki: Samouczek oraz Ustawienia */}
+        {/* Prawe kontrolki: Szablon PDF, Samouczek oraz Ustawienia */}
         <div className="flex items-center justify-end gap-1.5 shrink-0">
+          <a
+            href="/assets/Wizytowki-MP_2026_09-template1.pdf"
+            download="Wizytowki-MP_2026_09-template1.pdf"
+            title="Pobierz oficjalny szablon produkcyjny Master PDF (4 strony DTP)"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs text-neutral-300 hover:text-white bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer"
+          >
+            <FileDown className="w-3.5 h-3.5 text-[#13A3E5]" />
+            <span className="hidden sm:inline">Szablon PDF</span>
+          </a>
+
           <button
             type="button"
             onClick={() => {
